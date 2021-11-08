@@ -1,0 +1,9 @@
+{
+    ApplicationDescription = "Owl, a Wayland compositor in Objective-C";
+    ApplicationName = Owl;
+    ApplicationRelease = "Owl 0.9";
+    NSExecutable = Owl;
+    NSIcon = "Owl.icns";
+    NSMainNibFile = "MainMenu";
+    NSPrincipalClass = NSApplication;
+}

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="owl_mach_ipc_unstable_v1">
+
+	<copyright>
+		Copyright © 2019-2021 Sergey Bugaev
+
+		Permission is hereby granted, free of charge, to any person obtaining a
+		copy of this software and associated documentation files (the "Software"),
+		to deal in the Software without restriction, including without limitation
+		the rights to use, copy, modify, merge, publish, distribute, sublicense,
+		and/or sell copies of the Software, and to permit persons to whom the
+		Software is furnished to do so, subject to the following conditions:
+
+		The above copyright notice and this permission notice (including the next
+		paragraph) shall be included in all copies or substantial portions of the
+		Software.
+
+		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+		IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+		FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+		THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+		LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+		FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+		DEALINGS IN THE SOFTWARE.
+	</copyright>
+
+	<interface name="zowl_mach_ipc_v1" version="1">
+		<description summary="communicate over Mach IPC">
+			This protocol allows the client and the compositor to set up a connection over
+			Mach IPC using the Mach bootstrap server. This may be useful for a number of
+			reasons, including sharing resources that can only be shared over a Mach IPC-based
+			API.
+
+			This protocol does not, by itself, assign any meaning or semantics to the Mach ports
+			it creates. In order for any port to be actually used for any concrete task, it needs
+			to be assigned a role, which determines what other operations (such as MIG routines)
+			are valid to be used on it.
+
+			See owl-iosurface for an example of a protocol that makes use of owl-mach-ipc.
+		</description>
+
+		<event name="bootstrap_name">
+			<description summary="announce the bootstrap name">
+				By sending this event, the compositor announces the bootstrap service name
+				it uses. The client is then expected to look up the compositor's Mach port
+				using a call such as bootstrap_look_up().
+			</description>
+			<arg name="name" type="string"/>
+		</event>
+
+		<request name="create_port">
+			<description summary="create a Mach port">
+				This request creates a zowl_mach_ipc_port_v1 object that wraps a Mach port
+				that is usable for communication between the server and the client. This request
+				by itself does not create the underlying Mach port of the zowl_mach_ipc_port_v1
+				object. In order to create or otherwise get the underlying Mach port, the
+				zowl_mach_ipc_port_v1 needs to be assigned a role first.
+			</description>
+			<arg name="id" type="new_id" interface="zowl_mach_ipc_port_v1"/>
+		</request>
+
+		<request name="destroy" type="destructor">
+			<description summary="destroy zowl_mach_ipc_v1">
+				Destroy this zowl_mach_ipc_v1 object and all the resources associated with
+				it. Destroying a zowl_mach_ipc_v1 object while a Mach port that was created
+				using it is in use is an error.
+			</description>
+		</request>
+	</interface>
+
+	<interface name="zowl_mach_ipc_port_v1" version="1">
+		<description summary="Mach port">
+			This interface represents a Mach IPC port. To create or otherwise get the underlying
+			Mach port, as well as to make use of it, this object needs to be assigned a role
+			using some other protocol (such as owl-iosurface).
+
+			After this object has been assigned a role, the client can retrieve the underlying
+			mach_port_t (as a send right) using the	owl_mach_ipc_v1_retrieve_port() MIG routine,
+			passing the port obtained from the bootstrap server and the secret sent by the server
+			in the zowl_mach_ipc_port_v1.secret event.
+		</description>
+
+		<event name="secret">
+			<description summary="announce the secret key">
+				This event announces the secret key that the client can pass into the
+				owl_mach_ipc_v1_retrieve_port() MIG routine in order to retrieve the underlying
+				mach_port_t of this zowl_mach_ipc_port_v1.
+
+				The secret key is both a security measure that prevents other processes from
+				impersonating the client, and a way for the compositor to know which
+				zowl_mach_ipc_port_v1 instance the port is requested for.
+			</description>
+			<arg name="secret" type="string"/>
+		</event>
+
+		<request name="destroy" type="destructor">
+			<description summary="destroy zowl_mach_ipc_port_v1">
+				Destroy this zowl_mach_ipc_port_v1 object and all the resources associated
+				with it, including the underlying Mach port, if it is still valid.
+			</description>
+		</request>
+	</interface>
+</protocol>

@@ -1,0 +1,14 @@
+subsystem owl_mach_ipc_v1 35421;
+
+#include <mach/std_types.defs>
+import "owl-mach-ipc-unstable-v1-mig-types.h";
+
+userprefix owl_mach_ipc_v1_;
+serverprefix owl_mach_ipc_v1_server_;
+
+type secret_t = c_string[*:80];
+
+routine retrieve_port(
+	server_port: mach_port_t;
+	secret: secret_t;
+	out port: mach_port_make_send_t);

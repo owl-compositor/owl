@@ -1,0 +1,10 @@
+subsystem owl_iosurface_v1 35422;
+
+#include <mach/std_types.defs>
+
+userprefix owl_iosurface_v1_;
+serverprefix owl_iosurface_v1_server_;
+
+routine set_surface_port(
+	receiver_port: mach_port_t;
+	iosurface_port: mach_port_t);

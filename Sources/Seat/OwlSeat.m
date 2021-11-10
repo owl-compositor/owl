@@ -77,7 +77,10 @@ static void seat_destroy(struct wl_resource *resource) {
         resource,
         WL_SEAT_CAPABILITY_POINTER | WL_SEAT_CAPABILITY_KEYBOARD
     );
-    wl_seat_send_name(resource, "seat0");
+
+    if (wl_resource_get_version(resource) >= 2) {
+        wl_seat_send_name(resource, "seat0");
+    }
 
     return self;
 }
